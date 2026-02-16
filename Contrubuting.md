@@ -72,7 +72,7 @@ This creates your own copy under your account.
 
 ```
 git clone https://github.com/YOUR-USERNAME/IdentityTokens-EVM-Contracts.git
-cd identitytokens-evm-contracts
+cd IdentityTokens-EVM-Contracts
 ```
 
 ---
