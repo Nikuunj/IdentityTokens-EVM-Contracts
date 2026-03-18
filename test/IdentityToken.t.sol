@@ -169,4 +169,18 @@ contract IdentityTokenTest is Test {
 
         assertEq(string(value), "new@example.com");
     }
+
+    function test_RevertIf_CompromisedIdentityDeletesAttribute() public {
+        vm.prank(alice);
+        uint256 tokenId = identityToken.mint();
+
+        // identityStates[tokenId].isCompromised = true
+        // slot index for identityStates mapping is 2 in current storage layout
+        bytes32 slot = keccak256(abi.encode(tokenId, uint256(2)));
+        vm.store(address(identityToken), slot, bytes32(uint256(1)));
+
+        vm.prank(alice);
+        vm.expectRevert(Errors.IdentityCompromised.selector);
+        identityToken.deleteAttribute(tokenId, "email");
+    }
 }
