@@ -94,7 +94,7 @@ contract IdentityToken is ERC721, IIdentityToken {
             revert Errors.MissingContact();
         }
     }
-    
+
     /**
      * @dev Sets a metadata attribute (e.g., name, social link) for an identity.
      */
@@ -104,6 +104,8 @@ contract IdentityToken is ERC721, IIdentityToken {
         bytes calldata value
     ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
         _setAttribute(tokenId, key, value);
+
+        _validateRequiredFields(tokenId);
     }
 
     /**
