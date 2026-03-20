@@ -77,6 +77,25 @@ contract IdentityToken is ERC721, IIdentityToken {
     }
 
     /**
+     * @dev Adds validation to ensure required identity fields are present.
+     *      Name is mandatory and at least one contact method (email or phone)
+     *      must be provided.
+     */
+    function _validateRequiredFields(uint256 tokenId) internal view {
+        bytes memory name = attributes[tokenId][keccak256(abi.encodePacked("name"))];
+        bytes memory email = attributes[tokenId][keccak256(abi.encodePacked("email"))];
+        bytes memory phone = attributes[tokenId][keccak256(abi.encodePacked("phone"))];
+
+        // Name is mandatory
+        if (name.length == 0) revert Errors.MissingName();
+
+        // At least one contact method required
+        if (email.length == 0 && phone.length == 0) {
+            revert Errors.MissingContact();
+        }
+    }
+    
+    /**
      * @dev Sets a metadata attribute (e.g., name, social link) for an identity.
      */
     function setAttribute(
