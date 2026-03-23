@@ -104,6 +104,7 @@ contract IdentityToken is ERC721, IIdentityToken {
         bytes calldata value
     ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
         _setAttribute(tokenId, key, value);
+        _validateRequiredFields(tokenId);
     }
 
     /**
@@ -142,6 +143,27 @@ contract IdentityToken is ERC721, IIdentityToken {
     }
 
     /**
+     * @dev Convenience setter for the "email" / "phone" attribute.
+     */
+    function setContact(
+        uint256 tokenId,
+        string calldata email,
+        string calldata phone
+    ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
+        if (bytes(email).length == 0 && bytes(phone).length == 0) {
+            revert Errors.MissingContact();
+        }
+
+        if (bytes(email).length != 0) {
+            _setAttribute(tokenId, "email", bytes(email));
+        }
+
+        if (bytes(phone).length != 0) {
+            _setAttribute(tokenId, "phone", bytes(phone));
+        }
+    }
+
+    /**
      * @dev Convenience setter for the "github" attribute.
      */
     function setGithub(
@@ -149,6 +171,7 @@ contract IdentityToken is ERC721, IIdentityToken {
         string calldata github
     ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
         _setAttribute(tokenId, "github", bytes(github));
+        _validateRequiredFields(tokenId);
     }
 
     function deleteAttribute(
