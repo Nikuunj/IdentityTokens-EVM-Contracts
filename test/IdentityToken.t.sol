@@ -24,7 +24,7 @@ contract IdentityTokenTest is Test {
     // -------------------------------------------------------------------------
 
     function test_Mint() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         assertEq(tokenId, 1);
@@ -37,45 +37,41 @@ contract IdentityTokenTest is Test {
     // -------------------------------------------------------------------------
 
     function test_SetAttribute() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         // Set name first, then email to satisfy validation
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setName(tokenId, "Alice Nakamoto");
+        identityToken.setContact(tokenId, "alice@example.com", "");
+
+        identityToken.setAttribute(tokenId, "github", bytes("https://github.com/alice"));
 
         bytes32 keyHash = keccak256(abi.encodePacked("name"));
         bytes memory retrievedValue = identityToken.attributes(tokenId, keyHash);
 
+        assertEq(string(identityToken.getAttribute(tokenId, "github")), "https://github.com/alice");
         assertEq(string(retrievedValue), "Alice Nakamoto");
     }
 
     function test_GetAttribute() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setName(tokenId, "Alice Nakamoto");
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
         assertEq(string(identityToken.getAttribute(tokenId, "name")), "Alice Nakamoto");
     }
 
     function test_GetAttribute_MatchesRawMapping() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         // Set required fields first
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setName(tokenId, "Alice Nakamoto");
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "github", bytes("https://github.com/alice"));
+        identityToken.setGithub(tokenId, "https://github.com/alice");
 
         assertEq(
             string(identityToken.getAttribute(tokenId, "github")),
@@ -84,19 +80,14 @@ contract IdentityTokenTest is Test {
     }
 
     function test_SetAttribute_SocialLinks() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setName(tokenId, "Alice Nakamoto");
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
-        vm.prank(alice);
         identityToken.setAttribute(tokenId, "github", bytes("https://github.com/alice"));
-        vm.prank(alice);
         identityToken.setAttribute(tokenId, "linkedin", bytes("https://linkedin.com/in/alice"));
-        vm.prank(alice);
         identityToken.setAttribute(tokenId, "twitter", bytes("https://twitter.com/alice"));
 
         assertEq(string(identityToken.getAttribute(tokenId, "github")), "https://github.com/alice");
@@ -105,44 +96,35 @@ contract IdentityTokenTest is Test {
     }
 
     function test_OverwriteAttribute() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes("Alice"));
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
-        vm.prank(alice);
+        identityToken.setName(tokenId, "Alice");
+        identityToken.setContact(tokenId, "alice@example.com", "");
         identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
 
         assertEq(string(identityToken.getAttribute(tokenId, "name")), "Alice Nakamoto");
     }
 
     function test_SetAttribute_EmptyValue() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
-        vm.prank(alice);
+        identityToken.setName(tokenId, "Alice Nakamoto");
+        identityToken.setContact(tokenId, "alice@example.com", "");
         identityToken.setAttribute(tokenId, "github", bytes(""));
         assertEq(identityToken.getAttribute(tokenId, "github").length, 0);
     }
 
     function test_SetAttribute_LongURL() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         // Required fields first
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setName(tokenId, "Alice Nakamoto");
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
         string memory url = "https://www.linkedin.com/in/alice-nakamoto-very-long-profile-url-example-1234567890";
-        vm.prank(alice);
         identityToken.setAttribute(tokenId, "linkedin", bytes(url));
 
         assertEq(string(identityToken.getAttribute(tokenId, "linkedin")), url);
@@ -153,20 +135,20 @@ contract IdentityTokenTest is Test {
     // -------------------------------------------------------------------------
 
     function test_SetName() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
         identityToken.setName(tokenId, "Alice Nakamoto");
 
         assertEq(string(identityToken.attributes(tokenId, Schema.NAME)), "Alice Nakamoto");
     }
 
     function test_SetGithub() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
+        identityToken.setName(tokenId, "Alice Nakamoto");
+        identityToken.setContact(tokenId, "alice@example.com", "");
         identityToken.setGithub(tokenId, "https://github.com/alice");
 
         assertEq(string(identityToken.attributes(tokenId, Schema.GITHUB)), "https://github.com/alice");
@@ -177,7 +159,7 @@ contract IdentityTokenTest is Test {
     // -------------------------------------------------------------------------
 
     function test_SetAttributesBatch() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         string[] memory keys = new string[](5);
@@ -194,7 +176,6 @@ contract IdentityTokenTest is Test {
         values[3] = bytes("Tokyo");
         values[4] = bytes("alice@example.com");
 
-        vm.prank(alice);
         identityToken.setAttributesBatch(tokenId, keys, values);
 
         assertEq(string(identityToken.getAttribute(tokenId, "name")), "Alice Nakamoto");
@@ -205,7 +186,7 @@ contract IdentityTokenTest is Test {
     }
 
     function test_SetAttributesBatch_SingleEntry() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         string[] memory keys = new string[](3);
@@ -218,7 +199,6 @@ contract IdentityTokenTest is Test {
         values[1] = bytes("alice@example.com");
         values[2] = bytes("30");
 
-        vm.prank(alice);
         identityToken.setAttributesBatch(tokenId, keys, values);
 
         assertEq(string(identityToken.getAttribute(tokenId, "age")), "30");
@@ -261,7 +241,7 @@ contract IdentityTokenTest is Test {
     }
 
     function test_RevertIf_BatchLengthMismatch() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         string[] memory keys = new string[](2);
@@ -270,7 +250,6 @@ contract IdentityTokenTest is Test {
         bytes[] memory values = new bytes[](1);
         values[0] = bytes("Alice Nakamoto");
 
-        vm.prank(alice);
         vm.expectRevert(Errors.ArrayLengthMismatch.selector);
         identityToken.setAttributesBatch(tokenId, keys, values);
     }
@@ -325,13 +304,11 @@ contract IdentityTokenTest is Test {
     // --- deleteAttribute ---
 
     function test_DeleteAttribute() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
-        vm.prank(alice);
         identityToken.deleteAttribute(tokenId, "email");
 
         bytes32 keyHash = keccak256(abi.encodePacked("email"));
@@ -341,37 +318,35 @@ contract IdentityTokenTest is Test {
     }
 
     function test_DeleteAttribute_EmitsEvent() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
         bytes32 keyHash = keccak256(abi.encodePacked("email"));
 
-        vm.prank(alice);
         vm.expectEmit(true, true, false, false);
         emit Events.AttributeDeleted(tokenId, keyHash);
         identityToken.deleteAttribute(tokenId, "email");
     }
 
     function test_RevertIf_NotOwnerDeletesAttribute() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        vm.startPrank(alice);
+        identityToken.setContact(tokenId, "alice@example.com", "");
+        vm.stopPrank();
 
-        vm.prank(bob);
+        vm.startPrank(bob);
         vm.expectRevert(Errors.NotTokenOwner.selector);
         identityToken.deleteAttribute(tokenId, "email");
     }
 
     function test_DeleteAttribute_NeverSet_DoesNotRevert() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
         identityToken.deleteAttribute(tokenId, "nonexistent");
 
         bytes32 keyHash = keccak256(abi.encodePacked("nonexistent"));
@@ -381,31 +356,25 @@ contract IdentityTokenTest is Test {
     }
 
     function test_DeleteAttribute_Twice_DoesNotRevert() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
-        vm.prank(alice);
         identityToken.deleteAttribute(tokenId, "email");
 
-        vm.prank(alice);
         identityToken.deleteAttribute(tokenId, "email");
     }
 
     function test_DeleteAttribute_ThenReSet() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        identityToken.setContact(tokenId, "alice@example.com", "");
 
-        vm.prank(alice);
         identityToken.deleteAttribute(tokenId, "email");
 
-        vm.prank(alice);
-        identityToken.setAttribute(tokenId, "email", bytes("new@example.com"));
+        identityToken.setContact(tokenId, "new@example.com", "");
 
         bytes32 keyHash = keccak256(abi.encodePacked("email"));
         bytes memory value = identityToken.attributes(tokenId, keyHash);
@@ -414,7 +383,7 @@ contract IdentityTokenTest is Test {
     }
 
     function test_RevertIf_CompromisedIdentityDeletesAttribute() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         // Use stdStorage to set isCompromised without hardcoding a slot
@@ -422,14 +391,13 @@ contract IdentityTokenTest is Test {
             true
         ); // isCompromised is the first field in IdentityState
 
-        vm.prank(alice);
         vm.expectRevert(Errors.IdentityCompromised.selector);
         identityToken.deleteAttribute(tokenId, "email");
     }
     // --- hasIdentity ---
 
     function test_HasIdentity_True() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         identityToken.mint();
         assertTrue(identityToken.hasIdentity(alice));
     }
@@ -441,7 +409,7 @@ contract IdentityTokenTest is Test {
     // --- getIdentity ---
 
     function test_GetIdentity_ReturnsCorrectFields() public {
-        vm.prank(alice);
+        vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
         DataTypes.Identity memory identity = identityToken.getIdentity(tokenId);
