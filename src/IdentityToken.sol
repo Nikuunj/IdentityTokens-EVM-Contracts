@@ -104,8 +104,6 @@ contract IdentityToken is ERC721, IIdentityToken {
         bytes calldata value
     ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
         _setAttribute(tokenId, key, value);
-
-        _validateRequiredFields(tokenId);
     }
 
     /**
@@ -132,6 +130,8 @@ contract IdentityToken is ERC721, IIdentityToken {
         for (uint256 i = 0; i < keys.length; i++) {
             _setAttribute(tokenId, keys[i], values[i]);
         }
+
+        _validateRequiredFields(tokenId);
     }
 
     /**
