@@ -182,7 +182,7 @@ contract IdentityTokenTest is Test {
         keys[1] = "github";
         keys[2] = "nationality";
         keys[3] = "residence";
-        keys[4] = "email"; 
+        keys[4] = "email";
 
         bytes[] memory values = new bytes[](5);
         values[0] = bytes("Alice Nakamoto");
