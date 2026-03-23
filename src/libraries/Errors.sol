@@ -16,4 +16,6 @@ library Errors {
     error AlreadyHasIdentity();
     error DuplicateEndorsement();
     error ArrayLengthMismatch();
+    error MissingName();
+    error MissingContact();
 }

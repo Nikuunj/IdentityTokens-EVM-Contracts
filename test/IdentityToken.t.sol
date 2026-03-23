@@ -40,8 +40,11 @@ contract IdentityTokenTest is Test {
         vm.prank(alice);
         uint256 tokenId = identityToken.mint();
 
+        // Set name first, then email to satisfy validation
         vm.prank(alice);
         identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
 
         bytes32 keyHash = keccak256(abi.encodePacked("name"));
         bytes memory retrievedValue = identityToken.attributes(tokenId, keyHash);
@@ -55,6 +58,8 @@ contract IdentityTokenTest is Test {
 
         vm.prank(alice);
         identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
 
         assertEq(string(identityToken.getAttribute(tokenId, "name")), "Alice Nakamoto");
     }
@@ -62,6 +67,12 @@ contract IdentityTokenTest is Test {
     function test_GetAttribute_MatchesRawMapping() public {
         vm.prank(alice);
         uint256 tokenId = identityToken.mint();
+
+        // Set required fields first
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
 
         vm.prank(alice);
         identityToken.setAttribute(tokenId, "github", bytes("https://github.com/alice"));
@@ -75,6 +86,11 @@ contract IdentityTokenTest is Test {
     function test_SetAttribute_SocialLinks() public {
         vm.prank(alice);
         uint256 tokenId = identityToken.mint();
+
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
 
         vm.prank(alice);
         identityToken.setAttribute(tokenId, "github", bytes("https://github.com/alice"));
@@ -95,6 +111,8 @@ contract IdentityTokenTest is Test {
         vm.prank(alice);
         identityToken.setAttribute(tokenId, "name", bytes("Alice"));
         vm.prank(alice);
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        vm.prank(alice);
         identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
 
         assertEq(string(identityToken.getAttribute(tokenId, "name")), "Alice Nakamoto");
@@ -105,14 +123,23 @@ contract IdentityTokenTest is Test {
         uint256 tokenId = identityToken.mint();
 
         vm.prank(alice);
-        identityToken.setAttribute(tokenId, "name", bytes(""));
-
-        assertEq(identityToken.getAttribute(tokenId, "name").length, 0);
+        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "github", bytes(""));
+        assertEq(identityToken.getAttribute(tokenId, "github").length, 0);
     }
 
     function test_SetAttribute_LongURL() public {
         vm.prank(alice);
         uint256 tokenId = identityToken.mint();
+
+        // Required fields first
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
+        vm.prank(alice);
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
 
         string memory url = "https://www.linkedin.com/in/alice-nakamoto-very-long-profile-url-example-1234567890";
         vm.prank(alice);
@@ -153,17 +180,19 @@ contract IdentityTokenTest is Test {
         vm.prank(alice);
         uint256 tokenId = identityToken.mint();
 
-        string[] memory keys = new string[](4);
+        string[] memory keys = new string[](5);
         keys[0] = "name";
         keys[1] = "github";
         keys[2] = "nationality";
         keys[3] = "residence";
+        keys[4] = "email";
 
-        bytes[] memory values = new bytes[](4);
+        bytes[] memory values = new bytes[](5);
         values[0] = bytes("Alice Nakamoto");
         values[1] = bytes("https://github.com/alice");
         values[2] = bytes("Japanese");
         values[3] = bytes("Tokyo");
+        values[4] = bytes("alice@example.com");
 
         vm.prank(alice);
         identityToken.setAttributesBatch(tokenId, keys, values);
@@ -172,17 +201,22 @@ contract IdentityTokenTest is Test {
         assertEq(string(identityToken.getAttribute(tokenId, "github")), "https://github.com/alice");
         assertEq(string(identityToken.getAttribute(tokenId, "nationality")), "Japanese");
         assertEq(string(identityToken.getAttribute(tokenId, "residence")), "Tokyo");
+        assertEq(string(identityToken.getAttribute(tokenId, "email")), "alice@example.com");
     }
 
     function test_SetAttributesBatch_SingleEntry() public {
         vm.prank(alice);
         uint256 tokenId = identityToken.mint();
 
-        string[] memory keys = new string[](1);
-        keys[0] = "age";
+        string[] memory keys = new string[](3);
+        keys[0] = "name";
+        keys[1] = "email";
+        keys[2] = "age";
 
-        bytes[] memory values = new bytes[](1);
-        values[0] = bytes("30");
+        bytes[] memory values = new bytes[](3);
+        values[0] = bytes("Alice Nakamoto");
+        values[1] = bytes("alice@example.com");
+        values[2] = bytes("30");
 
         vm.prank(alice);
         identityToken.setAttributesBatch(tokenId, keys, values);
