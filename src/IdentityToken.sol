@@ -22,6 +22,11 @@ contract IdentityToken is ERC721, IIdentityToken {
     // tokenId => attribute keyHash => attribute value
     mapping(uint256 => mapping(bytes32 => bytes)) public attributes;
 
+    // required attribute key hashes
+    bytes32 private constant NAME_KEY = keccak256(abi.encodePacked("name"));
+    bytes32 private constant EMAIL_KEY = keccak256(abi.encodePacked("email"));
+    bytes32 private constant PHONE_KEY = keccak256(abi.encodePacked("phone"));
+
     // tokenId => array of Endorsements
     mapping(uint256 => DataTypes.Endorsement[]) public endorsements;
 
@@ -82,9 +87,9 @@ contract IdentityToken is ERC721, IIdentityToken {
      *      must be provided.
      */
     function _validateRequiredFields(uint256 tokenId) internal view {
-        bytes memory name = attributes[tokenId][keccak256(abi.encodePacked("name"))];
-        bytes memory email = attributes[tokenId][keccak256(abi.encodePacked("email"))];
-        bytes memory phone = attributes[tokenId][keccak256(abi.encodePacked("phone"))];
+        bytes storage name = attributes[tokenId][NAME_KEY];
+        bytes storage email = attributes[tokenId][EMAIL_KEY];
+        bytes storage phone = attributes[tokenId][PHONE_KEY];
 
         // Name is mandatory
         if (name.length == 0) revert Errors.MissingName();
@@ -103,8 +108,14 @@ contract IdentityToken is ERC721, IIdentityToken {
         string calldata key,
         bytes calldata value
     ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
+        bytes32 keyHash = keccak256(abi.encodePacked(key));
+
         _setAttribute(tokenId, key, value);
-        _validateRequiredFields(tokenId);
+
+        // skip validation if the updated attribute is one of the required fields, since
+        if (keyHash != NAME_KEY && keyHash != EMAIL_KEY && keyHash != PHONE_KEY) {
+            _validateRequiredFields(tokenId);
+        }
     }
 
     /**
@@ -128,11 +139,20 @@ contract IdentityToken is ERC721, IIdentityToken {
     ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
         if (keys.length != values.length) revert Errors.ArrayLengthMismatch();
 
+        bool shouldValidate = true;
+
         for (uint256 i = 0; i < keys.length; i++) {
+            bytes32 keyHash = keccak256(abi.encodePacked(keys[i]));
             _setAttribute(tokenId, keys[i], values[i]);
+
+            if (keyHash == NAME_KEY || keyHash == EMAIL_KEY || keyHash == PHONE_KEY) {
+                shouldValidate = false;
+            }
         }
 
-        _validateRequiredFields(tokenId);
+        if (shouldValidate) {
+            _validateRequiredFields(tokenId);
+        }
     }
 
     /**
