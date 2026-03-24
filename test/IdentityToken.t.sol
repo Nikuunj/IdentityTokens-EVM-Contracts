@@ -189,6 +189,8 @@ contract IdentityTokenTest is Test {
         vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
+        identityToken.setContact(tokenId, "alice@example.com", "");
+
         string[] memory keys = new string[](1);
         keys[0] = "name";
 

@@ -139,20 +139,13 @@ contract IdentityToken is ERC721, IIdentityToken {
     ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
         if (keys.length != values.length) revert Errors.ArrayLengthMismatch();
 
-        bool shouldValidate = true;
+        uint8 shouldValidate = 0;
 
         for (uint256 i = 0; i < keys.length; i++) {
-            bytes32 keyHash = keccak256(abi.encodePacked(keys[i]));
             _setAttribute(tokenId, keys[i], values[i]);
-
-            if (keyHash == NAME_KEY || keyHash == EMAIL_KEY || keyHash == PHONE_KEY) {
-                shouldValidate = false;
-            }
         }
 
-        if (shouldValidate) {
-            _validateRequiredFields(tokenId);
-        }
+        _validateRequiredFields(tokenId);
     }
 
     /**
