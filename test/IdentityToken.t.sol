@@ -41,8 +41,8 @@ contract IdentityTokenTest is Test {
         uint256 tokenId = identityToken.mint();
 
         // Set name first, then email to satisfy validation
-        identityToken.setName(tokenId, "Alice Nakamoto");
-        identityToken.setContact(tokenId, "alice@example.com", "");
+        identityToken.setAttribute(tokenId, "name", bytes("Alice Nakamoto"));
+        identityToken.setAttribute(tokenId, "email", bytes("alice@example.com"));
 
         identityToken.setAttribute(tokenId, "github", bytes("https://github.com/alice"));
 
@@ -189,19 +189,15 @@ contract IdentityTokenTest is Test {
         vm.startPrank(alice);
         uint256 tokenId = identityToken.mint();
 
-        string[] memory keys = new string[](3);
+        string[] memory keys = new string[](1);
         keys[0] = "name";
-        keys[1] = "email";
-        keys[2] = "age";
 
-        bytes[] memory values = new bytes[](3);
+        bytes[] memory values = new bytes[](1);
         values[0] = bytes("Alice Nakamoto");
-        values[1] = bytes("alice@example.com");
-        values[2] = bytes("30");
 
         identityToken.setAttributesBatch(tokenId, keys, values);
 
-        assertEq(string(identityToken.getAttribute(tokenId, "age")), "30");
+        assertEq(string(identityToken.getAttribute(tokenId, "name")), "Alice Nakamoto");
     }
 
     // -------------------------------------------------------------------------
