@@ -529,4 +529,38 @@ contract IdentityTokenTest is Test {
 
         assertTrue(identityToken.isExpired(tokenId));
     }
+
+    // --- updateAttribute ---
+    function test_UpdateAttribute_Success() public {
+        vm.startPrank(alice);
+
+        // Mint identity
+        uint256 tokenId = identityToken.mint();
+
+        // Set initial attribute
+        identityToken.setAttribute(tokenId, "name", bytes("alice"));
+
+        // Update attribute
+        identityToken.updateAttribute(tokenId, "name", bytes("aliceeeee"));
+
+        // Fetch updated value
+        bytes memory value = identityToken.getAttribute(tokenId, "name");
+
+        assertEq(string(value), "aliceeeee");
+
+        vm.stopPrank();
+    }
+
+    // Test updating an attribute that was never set before should revert with AttributeDoesNotExist error
+    function test_UpdateAttribute_FailIfNotExist() public {
+        vm.startPrank(alice);
+
+        uint256 tokenId = identityToken.mint();
+
+        // Expect revert because attribute not set before
+        vm.expectRevert(Errors.AttributeDoesNotExist.selector);
+        identityToken.updateAttribute(tokenId, "name", bytes("New"));
+
+        vm.stopPrank();
+    }
 }
