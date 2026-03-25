@@ -10,6 +10,8 @@ interface IIdentityToken is IERC721, IERC721Metadata {
     // Attribute management
     // -------------------------------------------------------------------------
 
+    function updateAttribute(uint256 tokenId, string calldata key, bytes calldata newValue) external;
+
     function setAttribute(uint256 tokenId, string calldata key, bytes calldata value) external;
     function deleteAttribute(uint256 tokenId, string calldata key) external;
 
