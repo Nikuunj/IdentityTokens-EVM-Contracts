@@ -9,7 +9,8 @@
         "sol-fmt": "prettier --write --plugin=prettier-plugin-solidity",
         "sol-fmt-all": "prettier --write \"**/*.sol\" --plugin=prettier-plugin-solidity",
         "sol-check": "prettier --check --plugin=prettier-plugin-solidity",
-        "sol-check-all": "prettier --check \"**/*.sol\" --plugin=prettier-plugin-solidity"
+        "sol-check-all": "prettier --check \"**/*.sol\" --plugin=prettier-plugin-solidity",
+        "prepare": "husky install"
     },
     "dependencies": {
         "@openzeppelin/contracts": "^5.0.0"
