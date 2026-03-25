@@ -77,6 +77,24 @@ contract IdentityToken is ERC721, IIdentityToken {
     }
 
     /**
+     * @dev Updates an existing attribute. Reverts if the attribute does not already exist.
+     *      This is a separate function from setAttribute to allow for more specific error handling
+     */
+    function updateAttribute(
+        uint256 tokenId,
+        string calldata key,
+        bytes calldata newValue
+    ) external onlyTokenOwner(tokenId) notCompromised(tokenId) {
+        bytes32 keyHash = keccak256(abi.encodePacked(key));
+
+        if (attributes[tokenId][keyHash].length == 0) {
+            revert Errors.AttributeDoesNotExist();
+        }
+
+        _setAttribute(tokenId, key, newValue);
+    }
+
+    /**
      * @dev Sets a metadata attribute (e.g., name, social link) for an identity.
      */
     function setAttribute(
